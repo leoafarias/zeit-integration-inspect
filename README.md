@@ -2,7 +2,7 @@
 
 Quickly inspect values during Zeit Integrations development.
 
-![Screenshot](./screenshot.png)
+![Screenshot](./screen.png)
 
 ## Install
 
@@ -30,8 +30,14 @@ async function handler(options){
 module.exports = withUiHook(handler);
 ```
 
-**inspectPanel** accepts 2 parameters.
+### Parameters
 
-- **options** - values that are passed down from withUiHook middleware. i.e. *metadata, clientState, action and etc*.
+- **options** - values that are passed down from withUiHook middleware.
 
 - **values** - These are values you would like to display during development.
+
+### Default Panels
+
+The panel will display **metadata, clientState, action** by default from the **options** parameter.
+
+You can always choose to hide them.
