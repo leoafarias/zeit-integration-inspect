@@ -1,13 +1,26 @@
 const { htm } = require("@zeit/integration-utils");
 
 module.exports = async function inspectPanel(options, values) {
+  if (options === null || typeof options !== "object") {
+    console.error("Options need to be a valid object.");
+  }
+
+  if (!options.metadata || !options.payload) {
+    console.error("Inspector needs to receive valid options");
+  }
+
   let { payload, metadata, zeitClient } = options;
   let { action, clientState } = payload;
 
-  // Sets default values to inspect
-  values["ClientState"] = clientState;
-  values["Metadata"] = metadata;
-  values["Action"] = action;
+  // Check if there is no values
+  const defaults = {
+    clientState: clientState,
+    metadata: metadata,
+    action: action
+  };
+
+  // Add default values to values parameter
+  values = { ...values, ...defaults };
 
   // Gets keys of all the values
   const keys = Object.keys(values);
@@ -58,10 +71,10 @@ module.exports = async function inspectPanel(options, values) {
   const renderDisplayOptions = keys => {
     return keys.map(k => {
       return htm`
-        <Box margin-left="20px">
-            <Checkbox name="${"inspect-" + k}" label="${k}" checked="${inspectorValues[k] === "SHOW"}"  />
-        </Box>
-        `;
+            <Box margin-left="20px">
+                <Checkbox name="${"inspect-" + k}" label="${k}" checked="${inspectorValues[k] === "SHOW"}"  />
+            </Box>
+            `;
     });
   };
 
@@ -71,12 +84,12 @@ module.exports = async function inspectPanel(options, values) {
       // Loop through all the value that are set to show to create the panels
       if (inspectorValues[k] === "SHOW") {
         return htm`
-        <Box width="100%" overflow="auto" border="1px solid #222">
-            <Box position="absolute" height="40px" padding="10px" background-color="rgb(37, 37, 37)">${k}</Box>
-            <Box white-space="pre" font-size="14px" margin-top="40px" line-height="24px" padding="20px" font-family="monospace, serif">
-                ${JSON.stringify(values[k], null, 2)}
-            </Box>
-        </Box>`;
+            <Box width="100%" overflow="auto" border="1px solid #222">
+                <Box position="absolute" height="40px" padding="10px" background-color="rgb(37, 37, 37)">${k}</Box>
+                <Box white-space="pre" font-size="14px" margin-top="40px" line-height="24px" padding="20px" font-family="monospace, serif">
+                    ${JSON.stringify(values[k], null, 2)}
+                </Box>
+            </Box>`;
       } else {
         // If value is not set to show, create empty box
         return htm`<Box/>`;
@@ -85,20 +98,20 @@ module.exports = async function inspectPanel(options, values) {
   };
 
   return htm`
-      <Box visibility="${shouldDisplay}" display="flex" width="100%" z-index="998" right="0" left="0" max-height="500px"  position="fixed" bottom="40px" width="100%" color="#fff" background-color="#010101"> 
-        ${renderPanels(keys)}
-      </Box>
-      <Box border-top="1px solid #111" position="fixed" z-index="999" width="100%" left="0" right="0" height="45px" bottom="0" padding="10px" background-color="#111">
-        <Box display="flex" align-items="center" color="#fff">  
-          ${renderDisplayButton}
-          <Box margin-left="10px">
-            <Button small abort action="clear-metadata-inspector">Clear Metadata</Button>     
-          </Box>
-          ${renderDisplayOptions(keys)}
-          <Box margin-left="10px">
-            <Button small action="refresh-inspector">Update display</Button>     
-          </Box>
+        <Box visibility="${shouldDisplay}" display="flex" width="100%" z-index="998" right="0" left="0" max-height="500px"  position="fixed" bottom="40px" width="100%" color="#fff" background-color="#010101"> 
+            ${renderPanels(keys)}
         </Box>
-      </Box>
-    `;
+        <Box border-top="1px solid #555" position="fixed" z-index="999" width="100%" left="0" right="0" height="45px" bottom="0" padding="10px" background-color="#333">
+            <Box display="flex" align-items="center" color="#fff">  
+                ${renderDisplayButton}
+            <Box margin-left="10px">
+                <Button small abort action="clear-metadata-inspector">Clear Metadata</Button>     
+            </Box>
+            ${renderDisplayOptions(keys)}
+            <Box margin-left="10px">
+                <Button small action="refresh-inspector">Update display</Button>     
+            </Box>
+            </Box>
+        </Box>
+        `;
 };
